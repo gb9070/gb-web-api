@@ -1,0 +1,28 @@
+{
+    "name": "gb-web-api",
+    "version": "1.0.1",
+    "description": "Api For grønnbank web",
+    "main": "src/app.js",
+    "scripts": {
+        "start": "node -r dotenv/config src/app.js"
+    },
+    "keywords": [],
+    "author": "Minecat,noahhalv",
+    "license": "none",
+    "type": "module",
+    "dependencies": {
+        "bcrypt": "^6.0.0",
+        "body-parser": "2.2.1",
+        "cookie-parser": "^1.4.7",
+        "cors": "2.8.5",
+        "dotenv": "^17.3.1",
+        "express": "5.1.0",
+        "jsonwebtoken": "^9.0.3",
+        "mysql2": "^3.18.1"
+    },
+    "installPath": "~/gronnbank/web/api",
+    "pm2": {
+        "name": "gb-web-api",
+        "file": "src/app.js"
+    }
+}
