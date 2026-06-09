@@ -15,7 +15,7 @@ router.get('/user/:username', authenticateToken, authorizeRole('admin'), getUser
 router.delete('/user/:uuid', authenticateToken, authorizeRole('admin'), deleteAccountById);
 
 //POST | localhost:3868/api/v1/auth/register
-router.post('/register', register);
+router.post('/register', authenticateToken, authorizeRole('admin'), register);
 
 //POST | localhost:3868/api/v1/auth/login
 router.post('/login', login);
