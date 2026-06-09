@@ -20,7 +20,7 @@ export async function createUser(email, username, passwordHash, roles = []) {
 
         // 2. Store password
         await conn.query(
-            `INSERT INTO auth_credential (uuid, account_uuid, password_hash)
+            `INSERT INTO auth_credentials (uuid, account_uuid, password_hash)
              VALUES (?, ?, ?);`,
             [credentialId, accountId, passwordHash]
         );
@@ -78,7 +78,7 @@ export async function fetchUser(username) {
                 a.updated_at,
                 COALESCE(GROUP_CONCAT(DISTINCT r.name), '') AS roles
              FROM account a
-             LEFT JOIN auth_credential ac ON ac.account_uuid = a.uuid
+             LEFT JOIN auth_credentials ac ON ac.account_uuid = a.uuid
              LEFT JOIN account_role ar ON ar.account_uuid = a.uuid
              LEFT JOIN role r ON r.uuid = ar.role_uuid
              WHERE a.username = ?
@@ -124,7 +124,7 @@ export async function deleteUserById(userId) {
         );
 
         await conn.query(
-            `DELETE FROM auth_credential WHERE account_uuid = ?`,
+            `DELETE FROM auth_credentials WHERE account_uuid = ?`,
             [userId]
         );
 
@@ -206,7 +206,7 @@ export async function deleteUserByUsername(username) {
         );
 
         await conn.query(
-            `DELETE FROM auth_credential WHERE account_uuid = ?`,
+            `DELETE FROM auth_credentials WHERE account_uuid = ?`,
             [userId]
         );
 
