@@ -28,7 +28,7 @@ export async function createUser(email, username, passwordHash, roles = []) {
         // 3. Resolve role names → UUIDs
         for (const roleName of roles) {
             const [roleRows] = await conn.query(
-                `SELECT uuid FROM ROLE WHERE name = ?`,
+                `SELECT uuid FROM role WHERE name = ?`,
                 [roleName]
             );
 
