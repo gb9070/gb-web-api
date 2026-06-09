@@ -13,14 +13,14 @@ export async function createUser(email, username, passwordHash, roles = []) {
 
         // 1. Create account
         await conn.query(
-            `INSERT INTO ACCOUNT (uuid, email, username, created_at, updated_at)
+            `INSERT INTO account (uuid, email, username, created_at, updated_at)
              VALUES (?, ?, ?, NOW(), NOW());`,
             [accountId, email, username]
         );
 
         // 2. Store password
         await conn.query(
-            `INSERT INTO AUTH_CREDENTIAL (uuid, account_uuid, password_hash)
+            `INSERT INTO auth_credential (uuid, account_uuid, password_hash)
              VALUES (?, ?, ?);`,
             [credentialId, accountId, passwordHash]
         );
@@ -38,7 +38,7 @@ export async function createUser(email, username, passwordHash, roles = []) {
                 roleId = randomUUID();
 
                 await conn.query(
-                    `INSERT INTO ROLE (uuid, name, description)
+                    `INSERT INTO role (uuid, name, description)
                     VALUES (?, ?, ?);`,
                     [roleId, roleName, `${roleName} role`]
                 );
@@ -47,7 +47,7 @@ export async function createUser(email, username, passwordHash, roles = []) {
             }
 
             await conn.query(
-                `INSERT INTO ACCOUNT_ROLE (account_uuid, role_uuid, assigned_at)
+                `INSERT INTO account_role (account_uuid, role_uuid, assigned_at)
                  VALUES (?, ?, NOW());`,
                 [accountId, roleId]
             );
@@ -77,10 +77,10 @@ export async function fetchUser(username) {
                 a.created_at,
                 a.updated_at,
                 COALESCE(GROUP_CONCAT(DISTINCT r.name), '') AS roles
-             FROM ACCOUNT a
-             LEFT JOIN AUTH_CREDENTIAL ac ON ac.account_uuid = a.uuid
-             LEFT JOIN ACCOUNT_ROLE ar ON ar.account_uuid = a.uuid
-             LEFT JOIN ROLE r ON r.uuid = ar.role_uuid
+             FROM account a
+             LEFT JOIN auth_credential ac ON ac.account_uuid = a.uuid
+             LEFT JOIN account_role ar ON ar.account_uuid = a.uuid
+             LEFT JOIN role r ON r.uuid = ar.role_uuid
              WHERE a.username = ?
              GROUP BY 
                 a.uuid,
@@ -119,17 +119,17 @@ export async function deleteUserById(userId) {
         await conn.beginTransaction();
 
         await conn.query(
-            `DELETE FROM ACCOUNT_ROLE WHERE account_uuid = ?`,
+            `DELETE FROM account_role WHERE account_uuid = ?`,
             [userId]
         );
 
         await conn.query(
-            `DELETE FROM AUTH_CREDENTIAL WHERE account_uuid = ?`,
+            `DELETE FROM auth_credential WHERE account_uuid = ?`,
             [userId]
         );
 
         await conn.query(
-            `DELETE FROM ACCOUNT WHERE uuid = ?`,
+            `DELETE FROM account WHERE uuid = ?`,
             [userId]
         );
 
@@ -156,9 +156,9 @@ export async function fetchUsers() {
                 a.created_at,
                 a.updated_at,
                 COALESCE(GROUP_CONCAT(DISTINCT r.name), '') AS roles
-             FROM ACCOUNT a
-             LEFT JOIN ACCOUNT_ROLE ar ON ar.account_uuid = a.uuid
-             LEFT JOIN ROLE r ON r.uuid = ar.role_uuid
+             FROM account a
+             LEFT JOIN account_role ar ON ar.account_uuid = a.uuid
+             LEFT JOIN role r ON r.uuid = ar.role_uuid
              GROUP BY 
                 a.uuid, 
                 a.email, 
@@ -190,7 +190,7 @@ export async function deleteUserByUsername(username) {
         await conn.beginTransaction();
 
         const [rows] = await conn.query(
-            `SELECT uuid FROM ACCOUNT WHERE username = ?`,
+            `SELECT uuid FROM account WHERE username = ?`,
             [username]
         );
 
@@ -201,17 +201,17 @@ export async function deleteUserByUsername(username) {
         const userId = rows[0].uuid;
 
         await conn.query(
-            `DELETE FROM ACCOUNT_ROLE WHERE account_uuid = ?`,
+            `DELETE FROM account_role WHERE account_uuid = ?`,
             [userId]
         );
 
         await conn.query(
-            `DELETE FROM AUTH_CREDENTIAL WHERE account_uuid = ?`,
+            `DELETE FROM auth_credential WHERE account_uuid = ?`,
             [userId]
         );
 
         await conn.query(
-            `DELETE FROM ACCOUNT WHERE uuid = ?`,
+            `DELETE FROM account WHERE uuid = ?`,
             [userId]
         );
 
