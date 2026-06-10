@@ -230,6 +230,11 @@ export async function patchCase(caseId, updates) {
         values.push(updates.ownerAccountUuid);
     }
 
+    if (updates.name !== undefined) {
+        fields.push("name = ?");
+        values.push(updates.name);
+    }
+
     if (fields.length === 0) {
         throw new Error("No updates provided");
     }
