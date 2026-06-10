@@ -8,11 +8,11 @@ const router = express.Router();
 //POST | localhost:3868/api/v1/case
 router.post("/", authenticateToken, createNewCase);
 
-router.get("/", authenticateToken, authorizeRole("support", "admin"), getCases);
-router.get("/:uuid", authenticateToken, authorizeRole("support", "admin"), getCase);
-
 router.get("/owner/:ownerUuid", authenticateToken, getCasesByOwner);
 router.get("/recipient/:recipientUuid", authenticateToken, getCasesByRecipient);
+
+router.get("/", authenticateToken, authorizeRole("support", "admin"), getCases);
+router.get("/:uuid", authenticateToken, authorizeRole("support", "admin"), getCase);
 
 router.patch("/:uuid", authenticateToken, updateCase);
 
