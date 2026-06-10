@@ -41,87 +41,122 @@ export async function createCase(
 export async function fetchCase(caseId) {
     const pool = await getPool();
 
-    const [rows] = await pool.query(
-        `SELECT *
-         FROM cases
-         WHERE uuid = ?`,
-        [caseId]
-    );
+    const [rows] = await pool.query(`
+        SELECT
+            c.*,
+
+            owner.uuid AS owner_uuid,
+            owner.username AS owner_username,
+            owner.email AS owner_email,
+
+            recipient.uuid AS recipient_uuid,
+            recipient.username AS recipient_username,
+            recipient.email AS recipient_email
+
+        FROM cases c
+        LEFT JOIN account owner
+            ON owner.uuid = c.owner_account_uuid
+        LEFT JOIN account recipient
+            ON recipient.uuid = c.recipient_account_uuid
+        WHERE c.uuid = ?
+    `, [caseId]);
 
     if (rows.length === 0) {
         return null;
     }
 
+    const row = rows[0];
+
     return {
-        uuid: rows[0].uuid,
-        name: rows[0].name,
-        description: rows[0].description,
-        priority: rows[0].priority,
-        recipientAccountUuid: rows[0].recipient_account_uuid,
-        ownerAccountUuid: rows[0].owner_account_uuid,
-        status: rows[0].status
+        uuid: row.uuid,
+        name: row.name,
+        description: row.description,
+        priority: row.priority,
+        recipientAccountUuid: row.recipient_account_uuid,
+        ownerAccountUuid: row.owner_account_uuid,
+        status: row.status,
+
+        ownerAccount: row.owner_uuid
+            ? {
+                uuid: row.owner_uuid,
+                username: row.owner_username,
+                email: row.owner_email
+            }
+            : null,
+
+        recipientAccount: row.recipient_uuid
+            ? {
+                uuid: row.recipient_uuid,
+                username: row.recipient_username,
+                email: row.recipient_email
+            }
+            : null
     };
 }
 
 export async function fetchCases() {
     const pool = await getPool();
 
-    const [rows] = await pool.query(
-        `SELECT *
-         FROM cases`
-    );
+    const [rows] = await pool.query(`
+        SELECT
+            c.*,
 
-    return rows.map(c => ({
-        uuid: c.uuid,
-        name: c.name,
-        description: c.description,
-        priority: c.priority,
-        recipientAccountUuid: c.recipient_account_uuid,
-        ownerAccountUuid: c.owner_account_uuid,
-        status: c.status
+            owner.uuid AS owner_uuid,
+            owner.username AS owner_username,
+            owner.email AS owner_email,
+
+            recipient.uuid AS recipient_uuid,
+            recipient.username AS recipient_username,
+            recipient.email AS recipient_email
+
+        FROM cases c
+        LEFT JOIN account owner
+            ON owner.uuid = c.owner_account_uuid
+        LEFT JOIN account recipient
+            ON recipient.uuid = c.recipient_account_uuid
+    `);
+
+    return rows.map(row => ({
+        uuid: row.uuid,
+        name: row.name,
+        description: row.description,
+        priority: row.priority,
+        recipientAccountUuid: row.recipient_account_uuid,
+        ownerAccountUuid: row.owner_account_uuid,
+        status: row.status,
+
+        ownerAccount: row.owner_uuid
+            ? {
+                uuid: row.owner_uuid,
+                username: row.owner_username,
+                email: row.owner_email
+            }
+            : null,
+
+        recipientAccount: row.recipient_uuid
+            ? {
+                uuid: row.recipient_uuid,
+                username: row.recipient_username,
+                email: row.recipient_email
+            }
+            : null
     }));
 }
 
 export async function fetchCasesByOwner(ownerAccountUuid) {
-    const pool = await getPool();
+    const cases = await fetchCases();
 
-    const [rows] = await pool.query(
-        `SELECT *
-         FROM cases
-         WHERE owner_account_uuid = ?`,
-        [ownerAccountUuid]
+    return cases.filter(
+        c => c.ownerAccountUuid === ownerAccountUuid
     );
-
-    return rows.map(c => ({
-        uuid: c.uuid,
-        name: c.name,
-        description: c.description,
-        priority: c.priority,
-        recipientAccountUuid: c.recipient_account_uuid,
-        ownerAccountUuid: c.owner_account_uuid,
-        status: c.status
-    }));
 }
 
 export async function fetchCasesByRecipient(recipientAccountUuid) {
-    const pool = await getPool();
+    const cases = await fetchCases();
 
-    const [rows] = await pool.query(
-        `SELECT *
-         FROM cases
-         WHERE recipient_account_uuid = ?`,
-        [recipientAccountUuid]
+    return cases.filter(
+        c => c.recipientAccountUuid === recipientAccountUuid
     );
-
-    return rows.map(c => ({
-        uuid: c.uuid,
-        name: c.name,
-        description: c.description,
-        priority: c.priority,
-        recipientAccountUuid: c.recipient_account_uuid,
-        ownerAccountUuid: c.owner_account_uuid,
-        status: c.status
-    }));
 }
 
 export async function updateCase(
